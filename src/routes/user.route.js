@@ -3,10 +3,16 @@ import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { auth } from "../lib/firebase.js";
-import { authMiddleware } from "../middlewares/auth.middleware.js";
+import {
+  authMiddleware,
+  protectedRoute,
+} from "../middlewares/auth.middleware.js";
 import { generateToken } from "../lib/token.js";
-const router = express.Router();
+import { sendWelcomeEmail } from "../emails/emailHandler.js";
+import cloudinary from "../lib/cloudinary.js";
 
+
+const router = express.Router();
 
 router.post("/register", async (req, res) => {
   const { name, email, password, role } = req.body;
@@ -49,15 +55,24 @@ router.post("/register", async (req, res) => {
     // ✅ Generate token
     const token = generateToken(user._id, res);
 
-    res.status(201).json({ token , user: {
-    id: user._id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    profilePic: user.profilePic,
-  },});
+    res.status(201).json({
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        profilePic: user.profilePic,
+      },
+    });
+
+    try {
+      sendWelcomeEmail(user.email, user.name, process.env.CLIENT_URL);
+    } catch (error) {
+      console.log("Failed to send the welcome email.", error);
+    }
   } catch (error) {
-    console.error("Error in Registering NewUser"+error.message);
+    console.error("Error in Registering NewUser" + error.message);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -119,6 +134,9 @@ router.get("/authStatus", async (req, res) => {
   }
 });
 
+router.get("/checkUser",protectedRoute,async(req,res)=>{
+  res.status(200).json(req.user)
+})
 router.post("/google", async (req, res) => {
   const { idToken } = req.body;
   try {
@@ -140,12 +158,31 @@ router.post("/google", async (req, res) => {
   }
 });
 
-router.get("/profile", authMiddleware,async (req, res) => {
+router.get("/profile", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
     res.json(user);
   } catch (error) {
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.put("/update-profile", protectedRoute, async (req, res) => {
+  try {
+    const { profilePic } = req.body;
+    if (!profilePic) {
+      return res.status(400).json({ message: "Profile Pic is required." });
+    }
+
+    const userId = req.user._id;
+    const cloudinaryResponse=await cloudinary.uploader.upload(profilePic)
+
+    const updatedUser=await User.findByIdAndUpdate(userId,{profilePic:cloudinaryResponse.secure_url},{new:true})
+res.json({updatedUser,})
+
+  } catch (error) {
+    console.log("Error in Updating Profile Picture.");
+    res.status(500).json({ message: "Internal Server Error." });
   }
 });
 

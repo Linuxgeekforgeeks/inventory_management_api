@@ -35,3 +35,27 @@ export const authMiddleware = async (req, res, next) => {
     res.status(401).json({ message: "Invalid Token" });
   }
 };
+
+export const protectedRoute = async (req, res, next) => {
+  try {
+    const token = req.cookies.jwt;
+    if (!token) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized - No Token Provided." });
+    }
+    const decorded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (!decorded) {
+      return res.status(401).json({ message: "Unauthorized -Invalid Token." });
+    }
+
+    const user = await User.findById(decorded.userId).select('-password');
+    if (!user) return res.status(404).json({ message: "User is not found." });
+    req.user=user
+    next();
+  } catch (error) {
+    console.log("Error in the protected Routes middleware",error)
+    res.status(500).json({message:"Internal Server Error."})
+  }
+};

@@ -3,6 +3,7 @@ import { indexRoutes } from "./routes/index.js"
 import { dbConnect } from "./configs/dbConnect.js"
 import dotenv from "dotenv"
 import cors from "cors"
+import cookieParser from "cookie-parser"
 
 dotenv.config()
 
@@ -16,6 +17,7 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true // if sending cookies
 }));
+app.use(cookieParser())
 
 //testingRoutes
 app.get("/api/test/",(req,res)=>{

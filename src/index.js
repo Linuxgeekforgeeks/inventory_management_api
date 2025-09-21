@@ -13,7 +13,7 @@ const app=express()
 //middlewares
 app.use(express.json())
 app.use(cors({
-    origin: "http://localhost:3000", // frontend origin
+    origin: ["http://localhost:3000","https://big-ecommerce-2fa-auth.vercel.app"], // frontend origin
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true // if sending cookies
 }));

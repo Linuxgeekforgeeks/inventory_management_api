@@ -17,12 +17,30 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
     firebaseUid: { type: String },
-     profilePic: {
+    profilePic: {
       type: String,
       default: "",
-    }
+    },
+
+    // 👇 New fields for frontend needs
+    status: {
+      type: String,
+      enum: ["active", "inactive"],
+      default: "active",
+    },
+    totalSpent: {
+      type: Number,
+      default: 0,
+    },
+    orderCount: {
+      type: Number,
+      default: 0,
+    },
+
+    // Optionally, reference actual orders if you want details
+    orders: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
   },
-  { timestamps: true }
+  { timestamps: true } // adds createdAt (registration date) & updatedAt
 );
 
 const User = mongoose.model("User", userSchema);

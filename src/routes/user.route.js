@@ -34,12 +34,12 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // ✅ Check password length
-    if (password.length < 6) {
-      return res
-        .status(400)
-        .json({ message: "Password must be at least 6 characters" });
-    }
+    // // ✅ Check password length
+    // if (password.length < 6) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "Password must be at least 6 characters" });
+    // }
 
     // ✅ Email regex validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

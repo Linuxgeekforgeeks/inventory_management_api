@@ -30,7 +30,7 @@ router.post("/register", async (req, res) => {
 
   try {
     // ✅ Check required fields
-    if (!name || !email || !password) {
+    if (!name || !email) {
       return res.status(400).json({ message: "All fields are required" });
     }
 

@@ -35,32 +35,36 @@ router.post("/register", async (req, res) => {
     }
 
     // // ✅ Check password length
-    // if (password.length < 6) {
-    //   return res
-    //     .status(400)
-    //     .json({ message: "Password must be at least 6 characters" });
-    // }
-
-    // ✅ Email regex validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: "Invalid email format" });
+    if (password.length < 6) {
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters" });
     }
 
-    // ✅ Check if user already exists
-    let user = await User.findOne({ email });
-    if (user) {
-      return res.status(400).json({ message: "User already exists" });
-    }
-    // ✅ Create and save user
-    console.log("here is ok...")
-    user = new User({
-      name,
-      email,
-      // password: await bcrypt.hash(password, 10) || "1233456",
-      password:"123456",
-      role: role || "user",
-    });
+   // ✅ Email regex validation
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+if (!emailRegex.test(email)) {
+  return res.status(400).json({ message: "Invalid email format" });
+}
+
+// ✅ Check if user already exists
+let user = await User.findOne({ email });
+if (user) {
+  return res.status(400).json({ message: "User already exists" });
+}
+
+// ✅ Hash the password
+const hashedPassword = await bcrypt.hash(password, 10);
+
+// ✅ Create and save user
+console.log("here is ok...");
+user = new User({
+  name,
+  email,
+  password: hashedPassword,
+  role: role || "shopper",
+});
+
 
     await user.save();
 

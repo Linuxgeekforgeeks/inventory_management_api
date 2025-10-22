@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: ["user", "shopper", "admin"],
-      default: "user",
+      default: "shopper",
     },
     firebaseUid: { type: String },
     profilePic: {

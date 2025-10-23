@@ -154,26 +154,54 @@ router.get("/checkUser",protectedRoute,async(req,res)=>{
   res.status(200).json(req.user)
 })
 router.post("/google", async (req, res) => {
-  const { idToken } = req.body;
+  const { idToken, name: providedName, email: providedEmail, photo, uid: providedUid } = req.body;
   try {
+    // Verify the Firebase ID token (secure source of truth)
     const decodedToken = await auth.verifyIdToken(idToken);
     const { email, name, uid } = decodedToken;
+
+    // Use decoded values for security (ignore provided ones unless needed for updates)
     let user = await User.findOne({ email });
     if (!user) {
-      user = new User({ name, email, role: "user", firebaseUid: uid });
+      // Create new user with default role (adjust to 'shopper' based on your app logic)
+      user = new User({ 
+        name, 
+        email, 
+        role: "shopper", // Changed from "user" to match frontend expectations ('admin' or 'shopper')
+        firebaseUid: uid 
+      });
       await user.save();
     }
+
+    // Optional: Update photo if provided (e.g., if profile pic changed)
+    if (photo && (!user.photo || user.photo !== photo)) {
+      user.photo = photo;
+      await user.save();
+    }
+
+    // Generate JWT with user details
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
-    res.json({ token });
+
+    // ✅ Return both user and token to match frontend expectations
+    res.json({ 
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        role: user.role,
+        photo: user.photo || null // Include photo if set
+      }, 
+      token 
+    });
   } catch (error) {
+    console.error('Google auth error:', error); // ✅ Add logging for debugging
     res.status(401).json({ message: "Google auth failed" });
   }
 });
-
 router.get("/profile", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");

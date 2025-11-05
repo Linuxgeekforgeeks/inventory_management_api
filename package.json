@@ -23,6 +23,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.0",
     "multer": "^2.0.2",
+    "node-cron": "^4.2.1",
     "nodemon": "^3.1.10",
     "resend": "^6.0.2",
     "uuidv4": "^6.2.13"

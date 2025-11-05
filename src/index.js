@@ -4,6 +4,7 @@ import { dbConnect } from "./configs/dbConnect.js"
 import dotenv from "dotenv"
 import cors from "cors"
 import cookieParser from "cookie-parser"
+import "../src/cronJobs/index.js"
 
 dotenv.config()
 
